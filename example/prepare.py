@@ -7,12 +7,12 @@ sys.path.extend([ROOT_PATH])
 
 
 def drop_collection():
-    db = MongoClient("mongodb://localhost")['simple_example_for_pymongo_keyset']
+    db = MongoClient("mongodb://localhost")['simple_example_for_pymongokeyset']
     db.drop_collection('test_collect')
 
 
 def get_collection():
-    db = MongoClient("mongodb://localhost")['simple_example_for_pymongo_keyset']
+    db = MongoClient("mongodb://localhost")['simple_example_for_pymongokeyset']
     return db['test_collect']
 
 

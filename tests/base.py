@@ -27,7 +27,7 @@ def drop_db_from_collect(collect):
 
 
 class BaseTestCase(unittest.TestCase):
-    # Can't use mongomock here, beacause pymongo_keyset use some private variables of pymongo.cursor.Cursor
+    # Can't use mongomock here, beacause pymongokeyset use some private variables of pymongo.cursor.Cursor
 
     objs = []
 

@@ -1,5 +1,5 @@
 from base import BaseTestCase
-from pymongo_keyset import get_page
+from pymongokeyset import get_page
 from copy import deepcopy
 import unittest
 

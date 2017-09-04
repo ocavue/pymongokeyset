@@ -1,6 +1,6 @@
 from base import BaseTestCase
 import unittest
-from pymongo_keyset import get_page
+from pymongokeyset import get_page
 
 HALF = 5000
 ALL = HALF * 2
