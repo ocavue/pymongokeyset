@@ -15,6 +15,13 @@ class Paging:
     '''
 
     def __init__(self, limit, backwards, obj_list, obj_formuler):
+        '''
+        limit           int         一页的长度
+        backwards       bool        查询的是否是上一页
+        obj_list        list        一个由 dict 组成的 list，长度为 0 <= len(obj_list) <= limit + 1
+        obj_formuler    function
+        '''
+
         item_0 = obj_formuler(obj_list[0]) if len(obj_list) >= 1 else {}
         item_n = obj_formuler(obj_list[limit - 1]) if len(obj_list) >= limit else {}
         item_n_plus_1 = obj_formuler(obj_list[limit]) if len(obj_list) > limit else {}
