@@ -39,6 +39,9 @@ class Paging:
 class Page(list):
     def __init__(self, cursor, limit, backwards):
         def obj_formuler(obj):
+            '''
+            把一个 obj 中有用的信息提取出来
+            '''
             result = {}
             for key in ordering:
                 result[key] = get_key(obj, key)
