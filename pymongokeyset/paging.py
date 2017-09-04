@@ -4,11 +4,17 @@ from bson.json_util import dumps, loads
 
 
 class Paging:
-    def __init__(self, limit, backwards, obj_list, obj_formuler):
-        '''
-        TODO
-        '''
+    '''
+    Paging 有三个属性：
+    1.  previous_position 字符串
+        保存着查询上一页所需要的信息
+    2.  next_position 字符串
+        保存着查询下一页所需要的信息
+    3.  has_next 或者 has_previous 布尔值
+        对于一个 Paging 实例，它只能有 has_next 和 has_previous 两者中的一种
+    '''
 
+    def __init__(self, limit, backwards, obj_list, obj_formuler):
         item_0 = obj_formuler(obj_list[0]) if len(obj_list) >= 1 else {}
         item_n = obj_formuler(obj_list[limit - 1]) if len(obj_list) >= limit else {}
         item_n_plus_1 = obj_formuler(obj_list[limit]) if len(obj_list) > limit else {}
