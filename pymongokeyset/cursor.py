@@ -8,10 +8,6 @@ def check_params(cursor):
                 'cursor has not attribute {}, make sure that cursor is an object of pymongo.cursor.Cursor'.format(attr)
             )
 
-    if not cursor._Cursor__ordering:
-        cursor = cursor.sort([('_id', 1)])
-    return cursor
-
 
 def generate_spec(key_condictions):
     '''
