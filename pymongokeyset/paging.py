@@ -2,7 +2,7 @@ from .cursor import get_keyset_cursor
 from .utils import get_key
 
 
-class paging:
+class Paging:
     def __init__(self, obj_list, limit, backwards, get_position):
         '''
         paging has 2 attributes:
@@ -32,7 +32,7 @@ class Page(list):
         if backwards:
             obj_return_list.reverse()
         super().__init__(obj_return_list)
-        self.paging = paging(obj_list, limit, backwards, get_position)
+        self.paging = Paging(obj_list, limit, backwards, get_position)
 
 
 def tmp_get_position(ordering):
