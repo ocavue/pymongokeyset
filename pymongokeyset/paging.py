@@ -41,7 +41,8 @@ class Page(list):
         self.paging = Paging(limit, backwards, obj_list, obj_formuler)
 
 
-def get_page(cursor, limit=10, position=None):
+def get_page(cursor, limit=10, position=''):
+    # 把 position 由 str 转为 dict
     if position:
         position = loads(position)
     else:
