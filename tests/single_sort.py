@@ -1,6 +1,7 @@
 from base import BaseTestCase
 import unittest
 from pymongokeyset import get_page
+from bson.json_util import loads
 
 HALF = 5000
 ALL = HALF * 2
@@ -18,8 +19,8 @@ class SingoSortTestCase(BaseTestCase):
         self.assertEqual([i['_id'] for i in page1], list(range(20)))
         self.assertEqual(hasattr(page1.paging, 'has_previous'), False)
         self.assertEqual(page1.paging.has_next, True)
-        self.assertEqual(page1.paging.previous_position, {'backwards': True, 'obj': {'_id': 0}})
-        self.assertEqual(page1.paging.next_position, {'backwards': False, 'obj': {'_id': 19}})
+        self.assertEqual(loads(page1.paging.previous_position), {'backwards': True, 'obj': {'_id': 0}})
+        self.assertEqual(loads(page1.paging.next_position), {'backwards': False, 'obj': {'_id': 19}})
 
     def test_2_next(self):
         cursor1 = self.collect.find({}).sort([('_id', 1)])
@@ -31,8 +32,8 @@ class SingoSortTestCase(BaseTestCase):
         self.assertEqual([i['_id'] for i in page2], list(range(20, 40)))
         self.assertEqual(hasattr(page2.paging, 'has_previous'), False)
         self.assertEqual(page2.paging.has_next, True)
-        self.assertEqual(page2.paging.previous_position, {'backwards': True, 'obj': {'_id': 20}})
-        self.assertEqual(page2.paging.next_position, {'backwards': False, 'obj': {'_id': 39}})
+        self.assertEqual(loads(page2.paging.previous_position), {'backwards': True, 'obj': {'_id': 20}})
+        self.assertEqual(loads(page2.paging.next_position), {'backwards': False, 'obj': {'_id': 39}})
 
     def test_3_previous(self):
         cursor1 = self.collect.find({}).sort([('_id', 1)])
@@ -50,8 +51,8 @@ class SingoSortTestCase(BaseTestCase):
         self.assertEqual([i['_id'] for i in page2], list(range(20, 40)))
         self.assertEqual(hasattr(page2.paging, 'has_next'), False)
         self.assertEqual(page2.paging.has_previous, True)
-        self.assertEqual(page2.paging.previous_position, {'backwards': True, 'obj': {'_id': 20}})
-        self.assertEqual(page2.paging.next_position, {'backwards': False, 'obj': {'_id': 39}})
+        self.assertEqual(loads(page2.paging.previous_position), {'backwards': True, 'obj': {'_id': 20}})
+        self.assertEqual(loads(page2.paging.next_position), {'backwards': False, 'obj': {'_id': 39}})
 
     def test_backwards_order(self):
         cursor1 = self.collect.find({}).sort([('_id', -1)])
