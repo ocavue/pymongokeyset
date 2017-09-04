@@ -1,9 +1,12 @@
-from pymongo.cursor import Cursor
-
-
 def check_params(cursor):
-    if not isinstance(cursor, Cursor):
-        raise TypeError('cursor must be a pymongo.cursor.Cursor, not {}'.format(type(cursor)))
+    # All private attributes of pymongo.cursor.Cursor that used by pymongokeyset
+    attrs = ['_Cursor__projection', '_Cursor__ordering']
+
+    for attr in attrs:
+        if not hasattr(cursor, attr):
+            raise AttributeError(
+                'cursor has not attribute {}, make sure that cursor is an object of pymongo.cursor.Cursor'.format(attr)
+            )
 
     if not cursor._Cursor__ordering:
         cursor = cursor.sort([('_id', 1)])
@@ -58,27 +61,33 @@ def reverse_ordering_direction(cursor, backwards):
 
 
 def add_projections(cursor):
-    '''对于所有由于排序的键，这些键都必须在 projection 中，因为这些键对应的 value 会成为下一次查询的时候条件'''
-
+    '''
+    对于所有由于排序的键，这些键都必须在 projection 中，因为这些键对应的 value 会成为下一次查询的时候条件
+    '''
     if not cursor._Cursor__projection:
         cursor._Cursor__projection = {}
 
-    son = cursor._Cursor__ordering
+    ordering = cursor._Cursor__ordering
+    projection = cursor._Cursor__projection
 
-    projection_type = 0
-    for key, direction in cursor._Cursor__projection.items():
+    # In mongodb, direction of projection(except '_id') is one of 1 and 0. Other case will report an error. For example:
+    #     collection.find({}, {a: 1, 'b': 0})
+    #     errmsg: Projection cannot have a mix of inclusion and exclusion.
+    direction = 0
+    for key, item_direction in projection.items():
         if key != '_id':
-            projection_type = direction
+            direction = item_direction
             break
 
-    if projection_type == 0:
-        cursor._Cursor__projection.pop('_id', None)
-        for key in list(son.keys()) + ['_id']:
-            if cursor._Cursor__projection.get(key) == 0:
-                cursor._Cursor__projection.pop(key)
+    if direction == 0:
+        # If direction of projection is 0, mongodb will not return fields in projection
+        # So make sure that projection and ordering has not intersection
+        for key in ordering.keys():
+            projection.pop(key, None)
     else:
-        cursor._Cursor__projection['_id'] = 1
-        cursor._Cursor__projection.update({key: 1 for key in son.keys()})
+        # If direction of projection is 1, mongodb will only reture fields in projection
+        # So make sure that all fields in ordering are in projection
+        projection.update({key: 1 for key in ordering.keys()})
 
 
 def add_keyset_specifying(cursor, position):

@@ -48,6 +48,12 @@ class Paging:
 
 
 class Page(list):
+    '''
+    Page 是 list 的子类。
+    Page 在 list 的基础上添加了一个属性 paging
+    paging 是 Paging 类的实例。
+    '''
+
     def __init__(self, cursor, limit, backwards):
         obj_list = list(cursor)
         obj_return_list = obj_list[:limit]
