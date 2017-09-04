@@ -27,6 +27,7 @@ def generate_spec(key_condictions):
         {'a': {'$gt': '1'}}
     ]}
     '''
+    
     if not key_condictions:
         return {}
 
