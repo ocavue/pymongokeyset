@@ -1,4 +1,4 @@
-pymongokeyset
+pymongokeyset: offset-free paging for pymongo
 ==================
 
 Example
@@ -7,6 +7,7 @@ Example
 An executable example can be found at ``pymongokeyset/example/simple_examle.py``
 
 .. code-block:: python
+
     collection = prepare()
 
     # gets the first page

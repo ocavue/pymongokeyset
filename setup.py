@@ -4,9 +4,9 @@ from setuptools import setup, find_packages
 
 setup(
     name='pymongokeyset',
-    version='0.0.2',
+    version='0.0.7',
     keywords=('keyset', 'pymongo'),
-    description='Offset-free Paging for Pymongo',
+    description='offset-free paging for pymongo',
     author='ocavue',
     author_email='ocavue@gmail.com',
     url='https://github.com/ocavue/pymongokeyset',
