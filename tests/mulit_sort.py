@@ -24,19 +24,25 @@ class MuiltSortTestCase(BaseTestCase):
         ])), self.objs)
 
     def test_paging(self):
-        page1 = get_page(deepcopy(self.cursor), 3)
+        cursor = self.collect.find({}).sort([
+            ('m', 1),
+            ('n', 1),
+            ('_id', 1),
+        ])
+
+        page1 = get_page(deepcopy(cursor), 3)
         self.assertEqual([i for i in page1], self.objs[:3])
 
-        page2 = get_page(deepcopy(self.cursor), 3, position=page1.paging.next_position)
+        page2 = get_page(deepcopy(cursor), 3, position=page1.paging.next_position)
         self.assertEqual([i for i in page2], self.objs[3:6])
 
-        page3 = get_page(deepcopy(self.cursor), 3, position=page2.paging.next_position)
+        page3 = get_page(deepcopy(cursor), 3, position=page2.paging.next_position)
         self.assertEqual([i for i in page3], self.objs[6:9])
 
-        page2 = get_page(deepcopy(self.cursor), 3, position=page3.paging.previous_position)
+        page2 = get_page(deepcopy(cursor), 3, position=page3.paging.previous_position)
         self.assertEqual([i for i in page2], self.objs[3:6])
 
-        page1 = get_page(deepcopy(self.cursor), 3, position=page2.paging.previous_position)
+        page1 = get_page(deepcopy(cursor), 3, position=page2.paging.previous_position)
         self.assertEqual([i for i in page1], self.objs[:3])
 
 
