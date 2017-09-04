@@ -11,6 +11,34 @@ def check_params(cursor):
 
 
 def generate_spec(key_condictions):
+    '''
+    key_condictions 是一个列表，这个列表的每个元素都是一个形如 (key, value, direction) 的 tuple
+    这个函数以递归的方式获取 mongo 查询语句
+
+    >>> generate_spec([
+    ...     ('a', '1', 1),
+    ...     ('b', '2', -1),
+    ... ])
+    {
+        '$or': [
+            {
+                '$and': [
+                    {'a': '1'},
+                    {
+                        'b': {
+                            '$lt': '2'
+                        }
+                    }
+                ]
+            },
+            {
+                'a': {
+                    '$gt': '1'
+                }
+            }
+        ]
+    }
+    '''
     if not key_condictions:
         return {}
 
