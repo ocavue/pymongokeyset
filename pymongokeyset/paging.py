@@ -4,14 +4,14 @@ from bson.json_util import dumps, loads
 
 
 class Paging:
-    def __init__(self, obj_list, limit, backwards, strfobj):
+    def __init__(self, limit, backwards, obj_list, obj_formuler):
         '''
         TODO
         '''
 
-        item_0 = strfobj(obj_list[0]) if len(obj_list) >= 1 else {}
-        item_n = strfobj(obj_list[limit - 1]) if len(obj_list) >= limit else {}
-        item_n_plus_1 = strfobj(obj_list[limit]) if len(obj_list) > limit else {}
+        item_0 = obj_formuler(obj_list[0]) if len(obj_list) >= 1 else {}
+        item_n = obj_formuler(obj_list[limit - 1]) if len(obj_list) >= limit else {}
+        item_n_plus_1 = obj_formuler(obj_list[limit]) if len(obj_list) > limit else {}
 
         if backwards:
             self.previous_position = dumps({'obj': item_n, 'backwards': True})
@@ -25,7 +25,7 @@ class Paging:
 
 class Page(list):
     def __init__(self, cursor, limit, backwards):
-        def strfobj(obj):
+        def obj_formuler(obj):
             result = {}
             for key in ordering:
                 result[key] = get_key(obj, key)
@@ -38,7 +38,7 @@ class Page(list):
         if backwards:
             obj_return_list.reverse()
         super().__init__(obj_return_list)
-        self.paging = Paging(obj_list, limit, backwards, strfobj)
+        self.paging = Paging(limit, backwards, obj_list, obj_formuler)
 
 
 def get_page(cursor, limit=10, position=None):
