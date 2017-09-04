@@ -1,6 +1,17 @@
 from .cursor import get_keyset_cursor
 from .utils import get_key
 from bson.json_util import dumps, loads
+from functools import partial
+
+
+def base_obj_formuler(obj, ordering):
+    '''
+    把一个 obj 中可以用于 keyset 的信息提取出来
+    '''
+    result = {}
+    for key in ordering:
+        result[key] = get_key(obj, key)
+    return result
 
 
 class Paging:
@@ -38,22 +49,14 @@ class Paging:
 
 class Page(list):
     def __init__(self, cursor, limit, backwards):
-        def obj_formuler(obj):
-            '''
-            把一个 obj 中可以用于 keyset 的信息提取出来
-            '''
-            result = {}
-            for key in ordering:
-                result[key] = get_key(obj, key)
-            return result
-
-        ordering = {i: j for i, j in cursor._Cursor__ordering.items()}
-
         obj_list = list(cursor)
         obj_return_list = obj_list[:limit]
         if backwards:
             obj_return_list.reverse()
         super().__init__(obj_return_list)
+
+        ordering = {i: j for i, j in cursor._Cursor__ordering.items()}
+        obj_formuler = partial(base_obj_formuler, ordering=ordering)
         self.paging = Paging(limit, backwards, obj_list, obj_formuler)
 
 

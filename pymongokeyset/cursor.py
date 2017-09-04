@@ -27,7 +27,7 @@ def generate_spec(key_condictions):
         {'a': {'$gt': '1'}}
     ]}
     '''
-    
+
     if not key_condictions:
         return {}
 
@@ -43,11 +43,15 @@ def generate_spec(key_condictions):
         return {key: {gt_or_lt: value}}
 
 
-def add__id_to_ordering(cursor, backwards):
+def add__id_to_ordering(cursor):
     '''_id 作为 unique_key 必须是排序条件的最后一个，为了保证 position 的唯一性'''
     son = cursor._Cursor__ordering
     if '_id' not in son:
         son.update({'_id': 1})
+
+
+def reverse_ordering_direction(cursor, backwards):
+    son = cursor._Cursor__ordering
     if backwards:
         for key in son.keys():
             son[key] = -1 * son[key]
@@ -102,7 +106,8 @@ def get_keyset_cursor(cursor, limit=10, position={}):
     '''add condiction for keyset'''
 
     cursor = check_params(cursor)
-    add__id_to_ordering(cursor, backwards=position.get('backwards', False))
+    add__id_to_ordering(cursor)
+    reverse_ordering_direction(cursor, backwards=position.get('backwards', False))
     add_projections(cursor)
     add_keyset_specifying(cursor, position)
     add_limit(cursor, limit)
