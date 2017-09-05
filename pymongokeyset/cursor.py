@@ -16,7 +16,7 @@ def generate_spec(key_condictions):
 
     >>> generate_spec([
     ...     ('a', '1', 1),
-    ...     ('b', '2', -1),
+    ...     ('b', '2', 0),
     ... ])
     {'$or': [
         {'$and': [
