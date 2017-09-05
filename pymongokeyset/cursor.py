@@ -57,9 +57,7 @@ def reverse_ordering_direction(cursor, backwards):
 
 
 def add_projections(cursor):
-    '''
-    对于所有由于排序的键，这些键都必须在 projection 中，因为这些键对应的 value 会成为下一次查询的时候条件
-    '''
+    '''对于所有由于排序的键，这些键都必须在 projection 中，因为这些键对应的 value 会成为下一次查询的时候条件'''
     if not cursor._Cursor__projection:
         cursor._Cursor__projection = {}
 
@@ -87,7 +85,7 @@ def add_projections(cursor):
 
 
 def add_keyset_specifying(cursor, position):
-    '''TODO'''
+    '''在 specifying 中添加 keyset filter'''
     if position:
 
         key_condictions = []
