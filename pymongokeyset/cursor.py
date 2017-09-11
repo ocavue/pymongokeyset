@@ -1,12 +1,12 @@
-def check_params(cursor):
-    # All private attributes of pymongo.cursor.Cursor that used by pymongokeyset
-    attrs = ['_Cursor__projection', '_Cursor__ordering']
+from collections import OrderedDict
+from pymongo.cursor import Cursor
 
-    for attr in attrs:
-        if not hasattr(cursor, attr):
-            raise AttributeError(
-                'cursor has not attribute {}, make sure that cursor is an object of pymongo.cursor.Cursor'.format(attr)
-            )
+
+def check_params(sort, limit):
+    if not isinstance(sort, list):
+        raise TypeError('sort must be list')
+    if not isinstance(limit, int):
+        raise TypeError('limit must be int')
 
 
 def generate_spec(key_condictions):
@@ -18,13 +18,7 @@ def generate_spec(key_condictions):
     ...     ('a', '10', 1),
     ...     ('b', '20', 0),
     ... ])
-    {'$or': [
-        {'$and': [
-            {'a': '10'},
-            {'b': {'$lt': '20'}}
-        ]},
-        {'a': {'$gt': '10'}}
-    ]}
+    {'$or': [{'$and': [{'a': '10'}, {'b': {'$lt': '20'}}]}, {'a': {'$gt': '10'}}]}
     '''
 
     if not key_condictions:
@@ -42,27 +36,47 @@ def generate_spec(key_condictions):
         return {key: {gt_or_lt: value}}
 
 
-def add__id_to_ordering(cursor):
-    '''_id 作为 unique_key 必须是排序条件的最后一个，为了保证 position 的唯一性'''
-    son = cursor._Cursor__ordering
-    if '_id' not in son:
-        son.update({'_id': 1})
+def change_sort_to_orderdict(sort):
+    '''
+    >>> change_sort_to_orderdict([('a', 1), ('b', -1)])
+    OrderedDict([('a', 1), ('b', -1)])
+    >>> change_sort_to_orderdict((['a', 1], ['b', -1]))
+    OrderedDict([('a', 1), ('b', -1)])
+    '''
+
+    return OrderedDict(sort)
 
 
-def reverse_ordering_direction(cursor, backwards):
-    son = cursor._Cursor__ordering
+def add__id_to_sort(sort):
+    '''_id 作为 unique_key 必须是排序条件的最后一个，为了保证 position 的唯一性
+
+    >>> sort = OrderedDict([('a', 1)])
+    >>> add__id_to_sort(sort)
+    >>> sort
+    OrderedDict([('a', 1), ('_id', 1)])
+    '''
+
+    if '_id' not in sort.keys():
+        sort['_id'] = 1
+
+
+def reverse_sort_direction(sort, backwards):
+    '''
+    >>> sort = OrderedDict([('a', 1), ('_id', 1)])
+    >>> reverse_sort_direction(sort, True)
+    >>> sort
+    OrderedDict([('a', -1), ('_id', -1)])
+    '''
+
     if backwards:
-        for key in son.keys():
-            son[key] = -1 * son[key]
+        for i in sort:
+            sort[i] = -sort[i]
 
 
-def add_projections(cursor):
+def add_projection(projection, sort):
     '''对于所有由于排序的键，这些键都必须在 projection 中，因为这些键对应的 value 会成为下一次查询的时候条件'''
-    if not cursor._Cursor__projection:
-        cursor._Cursor__projection = {}
-
-    ordering = cursor._Cursor__ordering
-    projection = cursor._Cursor__projection
+    if projection is None:
+        return
 
     # In mongodb, direction of projection(except '_id') is one of 1 and 0. Other case will report an error. For example:
     #     collection.find({}, {a: 1, 'b': 0})
@@ -76,43 +90,58 @@ def add_projections(cursor):
     if direction == 0:
         # If direction of projection is 0, mongodb will not return fields in projection
         # So make sure that projection and ordering has not intersection
-        for key in ordering.keys():
+        for key in sort.keys():
             projection.pop(key, None)
     else:
         # If direction of projection is 1, mongodb will only reture fields in projection
         # So make sure that all fields in ordering are in projection
-        projection.update({key: 1 for key in ordering.keys()})
+        projection.update({key: 1 for key in sort.keys()})
 
 
-def add_keyset_specifying(cursor, position):
+def add_keyset_specifying(filter, sort, position):
     '''在 specifying 中添加 keyset filter'''
     if position:
 
         key_condictions = []
-        for key, direction in cursor._Cursor__ordering.items():
+        for key, direction in sort.items():
             key_condictions.append((key, position['obj'].get(key), direction))
 
         keyset_condiction = generate_spec(key_condictions)
 
-        if cursor._Cursor__spec:
-            cursor._Cursor__spec = {'$and': [keyset_condiction, cursor._Cursor__spec]}
+        if filter:
+            filter = {'$and': [keyset_condiction, filter]}
         else:
-            cursor._Cursor__spec = keyset_condiction
+            filter = keyset_condiction
+    return filter
 
 
-def add_limit(cursor, limit):
+def add_limit(limit):
     '''为了知道有没有下一页/上一页，需要多查出一个文档。多查出的那个文档不会返回给用户'''
-    cursor = cursor.limit(limit + 1)
+    if limit == 0:
+        return 0
+    else:
+        return abs(limit) + 1
 
 
-def get_keyset_cursor(cursor, limit=10, position={}):
-    '''add condiction for keyset'''
+def get_page(collection, filter={}, projection=None, sort=[], limit=0, position={}):
+    check_params(sort, limit)
 
-    cursor = check_params(cursor)
-    add__id_to_ordering(cursor)
-    reverse_ordering_direction(cursor, backwards=position.get('backwards', False))
-    add_projections(cursor)
-    add_keyset_specifying(cursor, position)
-    add_limit(cursor, limit)
+    sort = change_sort_to_orderdict(sort)
+    add__id_to_sort(sort)
+    reverse_sort_direction(sort, backwards=position.get('backwards', False))
+    add_projection(projection, sort)
+    filter = add_keyset_specifying(filter, sort, position)
+    limit = add_limit(limit)
 
-    return cursor
+    return Cursor(
+        collection=collection,
+        filter=filter,
+        projection=projection,
+        limit=limit,
+        sort=list(sort.items()),
+    )
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
