@@ -19,37 +19,31 @@ class NormalTestCase(BaseTestCase):
         {'m': 1, 'n': 1, '_id': 7},
     ]  # yapf: disable
 
-    def test_forwards_process(self):
+    def test_normal_case(self):
         cursor1 = get_page(self.collect, limit=3, sort=[('_id', 1)])
-        # log(list(cursor1))
         self.assertEqual(list(cursor1), self.objs[:3])
         self.assertTrue(cursor1.paging.has_next)
+        self.assertFalse(hasattr(cursor1.paging, 'has_previous'))
 
         cursor2 = get_page(self.collect, limit=3, sort=[('_id', 1)], position=cursor1.paging.next_position)
-        # log(list(cursor2))
         self.assertEqual(list(cursor2), self.objs[3:6])
         self.assertTrue(cursor2.paging.has_next)
+        self.assertFalse(hasattr(cursor2.paging, 'has_previous'))
 
         cursor3 = get_page(self.collect, limit=3, sort=[('_id', 1)], position=cursor2.paging.next_position)
-        # log(list(cursor3))
         self.assertEqual(list(cursor3), self.objs[6:])
         self.assertFalse(cursor3.paging.has_next)
-
-        return cursor3
-
-    def test_backwards_process(self):
-        cursor3 = self.test_forwards_process()
+        self.assertFalse(hasattr(cursor3.paging, 'has_previous'))
 
         cursor2 = get_page(self.collect, limit=3, sort=[('_id', 1)], position=cursor3.paging.previous_position)
-        # log(list(cursor2))
         self.assertEqual(list(cursor2), self.objs[3:6])
-        # log(cursor2.paging.__dict__)
         self.assertTrue(cursor2.paging.has_previous)
+        self.assertFalse(hasattr(cursor2.paging, 'has_next'))
 
         cursor1 = get_page(self.collect, limit=3, sort=[('_id', 1)], position=cursor2.paging.previous_position)
-        # log(list(cursor1))
         self.assertEqual(list(cursor1), self.objs[:3])
         self.assertFalse(cursor1.paging.has_previous)
+        self.assertFalse(hasattr(cursor1.paging, 'has_next'))
 
 
 if __name__ == '__main__':
