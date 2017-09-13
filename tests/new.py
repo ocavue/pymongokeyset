@@ -1,5 +1,5 @@
 from base import BaseTestCase, unittest
-from pymongokeyset.cursor import get_page
+from pymongokeyset.cursor import get_keyset_cursor as get_page
 
 
 class SimpleTestCase(BaseTestCase):
@@ -17,7 +17,6 @@ class SimpleTestCase(BaseTestCase):
     def test_first_page(self):
         cursor = get_page(self.collect, limit=3, sort=[('_id', 1)])
         self.assertEqual(list(cursor), self.objs[:3])
-        print(cursor.first_end)
 
 
 if __name__ == '__main__':

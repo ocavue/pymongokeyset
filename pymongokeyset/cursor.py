@@ -9,10 +9,9 @@ class NewCursor(Cursor):
 
         self.__limit = limit
         self.__passed = 0
-        self.__first_obj = 0
-        self.__item_0 = None
-        self.__item_n = None
-        self.__item_n_plus_1 = None
+        self._item_0 = None
+        self._item_n = None
+        self._item_n_plus_1 = None
 
         super().__init__(
             collection=collection,
@@ -23,15 +22,18 @@ class NewCursor(Cursor):
         )
 
     def __next__(self):
-        if self.__passed == 0:
-            self.__item_0 = super().__next__()
-        elif self.__passed == self.__limit - 2:
-            self.__item_n = super().__next__()
+        self.__passed += 1
+
+        if self.__passed == 1:
+            self._item_0 = super().__next__()
+            return self._item_0
         elif self.__passed == self.__limit - 1:
-            self.__item_n_plus_1 = super().__next__()
+            self._item_n = super().__next__()
+            return self._item_n
+        elif self.__passed == self.__limit:
+            self._item_n_plus_1 = super().__next__()
             raise StopIteration
 
-        self.__passed += 1
         return super().__next__()
 
 
