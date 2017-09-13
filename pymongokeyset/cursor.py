@@ -59,11 +59,11 @@ class NewCursor(Cursor):
 
         self.__backwards = backwards
         self.__limit = limit
-        self.__passed = 0
         self.spec_items = [None, None, None]
         self.__obj_formuler = partial(base_obj_formuler, sort_keys=[i[0] for i in sort])
         self.__paging = None
         self.__data = deque()  # TODO
+
         super().__init__(
             collection=collection,
             filter=filter,
@@ -92,22 +92,18 @@ class NewCursor(Cursor):
                 self.__data.append(super().__next__())
         except StopIteration:
             pass
+
         self.spec_items[2] = self.__data.pop() if len(self.__data) >= self.__limit else {}
         if self.__backwards:
             self.__data.reverse()
+        self.spec_items[0] = self.__data[0] if len(self.__data) >= 1 else {}
+        self.spec_items[1] = self.__data[-1] if len(self.__data) >= self.__limit - 1 else {}
 
     def __next__(self):
         if not self.__data and super().alive:
             self.__get_data()
-        if self.__data:
-            self.__passed += 1
 
-            if self.__passed == 1:
-                self.spec_items[0] = self.__data.popleft()
-                return self.spec_items[0]
-            elif self.__passed == self.__limit - 1:
-                self.spec_items[1] = self.__data.popleft()
-                return self.spec_items[1]
+        if self.__data:
             return self.__data.popleft()
         else:
             raise StopIteration

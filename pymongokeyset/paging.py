@@ -52,25 +52,25 @@ def add__id_to_sort(sort):
 
     >>> sort = OrderedDict([('a', 1)])
     >>> add__id_to_sort(sort)
-    >>> sort
     OrderedDict([('a', 1), ('_id', 1)])
     '''
 
     if '_id' not in sort.keys():
         sort['_id'] = 1
+    return sort
 
 
 def reverse_sort_direction(sort, backwards):
     '''
     >>> sort = OrderedDict([('a', 1), ('_id', 1)])
     >>> reverse_sort_direction(sort, True)
-    >>> sort
     OrderedDict([('a', -1), ('_id', -1)])
     '''
 
     if backwards:
         for i in sort:
             sort[i] = -sort[i]
+    return sort
 
 
 def add_projection(projection, sort):
@@ -96,6 +96,7 @@ def add_projection(projection, sort):
         # If direction of projection is 1, mongodb will only reture fields in projection
         # So make sure that all fields in ordering are in projection
         projection.update({key: 1 for key in sort.keys()})
+    return projection
 
 
 def add_keyset_specifying(filter, sort, position):
@@ -128,9 +129,9 @@ def get_keyset_cursor(collection, filter={}, projection=None, sort=[], limit=10,
     backwards = position.get('backwards', False)
 
     sort = change_sort_to_orderdict(sort)
-    add__id_to_sort(sort)
-    reverse_sort_direction(sort, backwards)
-    add_projection(projection, sort)
+    sort = add__id_to_sort(sort)
+    sort = reverse_sort_direction(sort, backwards)
+    projection = add_projection(projection, sort)
     filter = add_keyset_specifying(filter, sort, position)
     limit = add_limit(limit)
 
