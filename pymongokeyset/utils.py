@@ -1,4 +1,3 @@
-
 def get_key(d, key):
     '''
     >>> get_key({'a': {'b': {'c': 1}}}, 'a.b.c')
@@ -12,3 +11,8 @@ def get_key(d, key):
         else:
             result = None
     return result
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
