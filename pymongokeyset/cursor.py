@@ -38,13 +38,13 @@ class Paging:
         obj_formuler    function
         '''
 
-        item_0 = obj_formuler(spec_items[0]) if len(spec_items) >= 1 else {}
-        item_n = obj_formuler(spec_items[1]) if len(spec_items) >= 2 else {}
-        item_n_plus_1 = obj_formuler(spec_items[2]) if len(spec_items) >= 3 else {}
+        item_0 = obj_formuler(spec_items[0]) if spec_items[0] else {}
+        item_n = obj_formuler(spec_items[1]) if spec_items[1] else {}
+        item_n_plus_1 = obj_formuler(spec_items[2]) if spec_items[2] else {}
 
         if backwards:
-            self.previous_position = dumps({'obj': item_n, 'backwards': True})
-            self.next_position = dumps({'obj': item_0, 'backwards': False})
+            self.previous_position = dumps({'obj': item_0, 'backwards': True})
+            self.next_position = dumps({'obj': item_n, 'backwards': False})
             self.has_previous = bool(item_n_plus_1)
         else:
             self.previous_position = dumps({'obj': item_0, 'backwards': True})
@@ -60,7 +60,7 @@ class NewCursor(Cursor):
         self.__backwards = backwards
         self.__limit = limit
         self.__passed = 0
-        self.spec_items = []
+        self.spec_items = [None, None, None]
         self.__obj_formuler = partial(base_obj_formuler, sort_keys=[i[0] for i in sort])
         self.__paging = None
         self.__data = deque()  # TODO
@@ -86,7 +86,37 @@ class NewCursor(Cursor):
                 )
             return self.__paging
 
+    def __get_data(self):
+        try:
+            while True:
+                self.__data.append(super().__next__())
+        except StopIteration:
+            pass
+        self.spec_items[2] = self.__data.pop() if len(self.__data) >= self.__limit else {}
+        if self.__backwards:
+            self.__data.reverse()
+
     def __next__(self):
+        if not self.__data and super().alive:
+            self.__get_data()
+        if self.__data:
+            self.__passed += 1
+
+            if self.__passed == 1:
+                self.spec_items[0] = self.__data.popleft()
+                return self.spec_items[0]
+            elif self.__passed == self.__limit - 1:
+                self.spec_items[1] = self.__data.popleft()
+                return self.spec_items[1]
+            # elif self.__passed == self.__limit:
+            #     self.spec_items.append(self.__data.popleft())
+            #     raise StopIteration
+            return self.__data.popleft()
+        else:
+
+            raise StopIteration
+
+    def __next_old(self):
         self.__passed += 1
 
         if self.__passed == 1:
