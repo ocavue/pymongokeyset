@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from pymongo.cursor import Cursor
 from .cursor import NewCursor
 
 
@@ -126,10 +125,11 @@ def add_limit(limit):
 
 def get_keyset_cursor(collection, filter={}, projection=None, sort=[], limit=10, position={}):
     check_params(sort, limit)
+    backwards = position.get('backwards', False)
 
     sort = change_sort_to_orderdict(sort)
     add__id_to_sort(sort)
-    reverse_sort_direction(sort, backwards=position.get('backwards', False))
+    reverse_sort_direction(sort, backwards)
     add_projection(projection, sort)
     filter = add_keyset_specifying(filter, sort, position)
     limit = add_limit(limit)
@@ -140,6 +140,7 @@ def get_keyset_cursor(collection, filter={}, projection=None, sort=[], limit=10,
         projection=projection,
         limit=limit,
         sort=list(sort.items()),
+        backwards=backwards
     )
 
 

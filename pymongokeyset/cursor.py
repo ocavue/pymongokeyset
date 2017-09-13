@@ -2,6 +2,7 @@ from .utils import get_key
 # from bson.json_util import dumps, loads
 from functools import partial
 from pymongo.cursor import Cursor
+from collections import deque
 
 
 def dumps(dict):
@@ -52,17 +53,17 @@ class Paging:
 
 
 class NewCursor(Cursor):
-    def __init__(self, collection, filter, projection, sort, limit):
+    def __init__(self, collection, filter, projection, sort, limit, backwards):
         if isinstance(limit, int) and limit <= 0:
             raise ValueError('limit must bigger than 0, not {}'.format(limit))
 
+        self.__backwards = backwards
         self.__limit = limit
         self.__passed = 0
-        self.__item_0, self.__item_n, self.__item_n_plus_1 = None, None, None
         self.spec_items = []
         self.__obj_formuler = partial(base_obj_formuler, sort_keys=[i[0] for i in sort])
         self.__paging = None
-
+        self.__data = deque()  # TODO
         super().__init__(
             collection=collection,
             filter=filter,
@@ -79,7 +80,7 @@ class NewCursor(Cursor):
             if not self.__paging:
                 self.__paging = Paging(
                     limit=self.__limit,
-                    backwards=False,
+                    backwards=self.__backwards,
                     obj_formuler=self.__obj_formuler,
                     spec_items=self.spec_items,
                 )
@@ -89,16 +90,13 @@ class NewCursor(Cursor):
         self.__passed += 1
 
         if self.__passed == 1:
-            self.__item_0 = super().__next__()
-            self.spec_items.append(self.__item_0)
-            return self.__item_0
+            self.spec_items.append(super().__next__())
+            return self.spec_items[-1]
         elif self.__passed == self.__limit - 1:
-            self.__item_n = super().__next__()
-            self.spec_items.append(self.__item_n)
-            return self.__item_n
+            self.spec_items.append(super().__next__())
+            return self.spec_items[-1]
         elif self.__passed == self.__limit:
-            self.__item_n_plus_1 = super().__next__()
-            self.spec_items.append(self.__item_n_plus_1)
+            self.spec_items.append(super().__next__())
             raise StopIteration
 
         return super().__next__()
