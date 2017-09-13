@@ -108,25 +108,6 @@ class NewCursor(Cursor):
             elif self.__passed == self.__limit - 1:
                 self.spec_items[1] = self.__data.popleft()
                 return self.spec_items[1]
-            # elif self.__passed == self.__limit:
-            #     self.spec_items.append(self.__data.popleft())
-            #     raise StopIteration
             return self.__data.popleft()
         else:
-
             raise StopIteration
-
-    def __next_old(self):
-        self.__passed += 1
-
-        if self.__passed == 1:
-            self.spec_items.append(super().__next__())
-            return self.spec_items[-1]
-        elif self.__passed == self.__limit - 1:
-            self.spec_items.append(super().__next__())
-            return self.spec_items[-1]
-        elif self.__passed == self.__limit:
-            self.spec_items.append(super().__next__())
-            raise StopIteration
-
-        return super().__next__()
