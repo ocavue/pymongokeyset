@@ -14,13 +14,10 @@ class SimpleTestCase(BaseTestCase):
         {'m': 1, 'n': 1, '_id': 8},
     ]  # yapf: disable
 
-    def test_without_limit(self):
-        cursor = get_page(self.collect, sort=[('_id', 1)])
-        self.assertEqual(list(cursor), self.objs)
-
-    def test_with_limit(self):
+    def test_first_page(self):
         cursor = get_page(self.collect, limit=3, sort=[('_id', 1)])
         self.assertEqual(list(cursor), self.objs[:3])
+        print(cursor.first_end)
 
 
 if __name__ == '__main__':

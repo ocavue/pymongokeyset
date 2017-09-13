@@ -2,6 +2,39 @@ from collections import OrderedDict
 from pymongo.cursor import Cursor
 
 
+class NewCursor(Cursor):
+    def __init__(self, collection, filter, projection, sort, limit):
+        if limit <= 0:
+            raise ValueError('limit must bigger than 0, not {}'.format(limit))
+
+        self.__limit = limit
+        self.__passed = 0
+        self.__first_obj = 0
+        self.__item_0 = None
+        self.__item_n = None
+        self.__item_n_plus_1 = None
+
+        super().__init__(
+            collection=collection,
+            filter=filter,
+            projection=projection,
+            limit=limit,
+            sort=sort,
+        )
+
+    def __next__(self):
+        if self.__passed == 0:
+            self.__item_0 = super().__next__()
+        elif self.__passed == self.__limit - 2:
+            self.__item_n = super().__next__()
+        elif self.__passed == self.__limit - 1:
+            self.__item_n_plus_1 = super().__next__()
+            raise StopIteration
+
+        self.__passed += 1
+        return super().__next__()
+
+
 def check_params(sort, limit):
     if not isinstance(sort, list):
         raise TypeError('sort must be list')
@@ -123,7 +156,7 @@ def add_limit(limit):
         return abs(limit) + 1
 
 
-def get_page(collection, filter={}, projection=None, sort=[], limit=0, position={}):
+def get_keyset_cursor(collection, filter={}, projection=None, sort=[], limit=0, position={}):
     check_params(sort, limit)
 
     sort = change_sort_to_orderdict(sort)
@@ -133,7 +166,7 @@ def get_page(collection, filter={}, projection=None, sort=[], limit=0, position=
     filter = add_keyset_specifying(filter, sort, position)
     limit = add_limit(limit)
 
-    return Cursor(
+    return NewCursor(
         collection=collection,
         filter=filter,
         projection=projection,
