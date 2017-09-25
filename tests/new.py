@@ -2,11 +2,6 @@ from base import BaseTestCase, unittest
 from pymongokeyset import get_keyset_cursor as get_page
 
 
-def log(*args, **kwargs):
-    print(*args, **kwargs)
-    pass
-
-
 class NormalTestCase(BaseTestCase):
     objs = [
         {'m': 0, 'n': 0, '_id': 0},
@@ -19,7 +14,7 @@ class NormalTestCase(BaseTestCase):
         {'m': 1, 'n': 1, '_id': 7},
     ]  # yapf: disable
 
-    def assert_all(self, cursor, objs, has_next=None, has_previous=None):
+    def assert_cursor(self, cursor, objs, has_next=None, has_previous=None):
         self.assertEqual(list(cursor), objs)
         if has_next is not None:
             self.assertEqual(cursor.paging.has_next, has_next)
@@ -36,19 +31,19 @@ class NormalTestCase(BaseTestCase):
         }
 
         cursor1 = get_page(**search_condictions)
-        self.assert_all(cursor1, self.objs[:3], has_next=True)
+        self.assert_cursor(cursor1, self.objs[:3], has_next=True)
 
         cursor2 = get_page(**search_condictions, position=cursor1.paging.next_position)
-        self.assert_all(cursor2, self.objs[3:6], has_next=True)
+        self.assert_cursor(cursor2, self.objs[3:6], has_next=True)
 
         cursor3 = get_page(**search_condictions, position=cursor2.paging.next_position)
-        self.assert_all(cursor3, self.objs[6:], has_next=False)
+        self.assert_cursor(cursor3, self.objs[6:], has_next=False)
 
         cursor2 = get_page(**search_condictions, position=cursor3.paging.previous_position)
-        self.assert_all(cursor2, self.objs[3:6], has_previous=True)
+        self.assert_cursor(cursor2, self.objs[3:6], has_previous=True)
 
         cursor1 = get_page(**search_condictions, position=cursor2.paging.previous_position)
-        self.assert_all(cursor1, self.objs[:3], has_previous=False)
+        self.assert_cursor(cursor1, self.objs[:3], has_previous=False)
 
     def test_mutil_sort_cast(self):
         search_condictions = {
@@ -58,19 +53,19 @@ class NormalTestCase(BaseTestCase):
         }
 
         cursor1 = get_page(**search_condictions)
-        self.assert_all(cursor1, self.objs[:3], has_next=True)
+        self.assert_cursor(cursor1, self.objs[:3], has_next=True)
 
         cursor2 = get_page(**search_condictions, position=cursor1.paging.next_position)
-        self.assert_all(cursor2, self.objs[3:6], has_next=True)
+        self.assert_cursor(cursor2, self.objs[3:6], has_next=True)
 
         cursor3 = get_page(**search_condictions, position=cursor2.paging.next_position)
-        self.assert_all(cursor3, self.objs[6:], has_next=False)
+        self.assert_cursor(cursor3, self.objs[6:], has_next=False)
 
         cursor2 = get_page(**search_condictions, position=cursor3.paging.previous_position)
-        self.assert_all(cursor2, self.objs[3:6], has_previous=True)
+        self.assert_cursor(cursor2, self.objs[3:6], has_previous=True)
 
         cursor1 = get_page(**search_condictions, position=cursor2.paging.previous_position)
-        self.assert_all(cursor1, self.objs[:3], has_previous=False)
+        self.assert_cursor(cursor1, self.objs[:3], has_previous=False)
 
 
 if __name__ == '__main__':
