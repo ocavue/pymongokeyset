@@ -1,8 +1,8 @@
-def get_key(d, key):
-    '''
-    >>> get_key({'a': {'b': {'c': 1}}}, 'a.b.c')
+def get_value(d, key):
+    """
+    >>> get_value({'a': {'b': {'c': 1}}}, 'a.b.c')
     1
-    '''
+    """
 
     result = d
     for k in key.split('.'):

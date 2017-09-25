@@ -1,4 +1,4 @@
-from .utils import get_key
+from .utils import get_value
 # from bson.json_util import dumps, loads
 from functools import partial
 from pymongo.cursor import Cursor
@@ -10,17 +10,17 @@ def dumps(dict):
 
 
 def base_obj_formuler(obj, sort_keys):
-    '''
+    """
     把一个 obj 中可以用于 keyset 的信息提取出来
-    '''
+    """
     result = {}
     for key in sort_keys:
-        result[key] = get_key(obj, key)
+        result[key] = get_value(obj, key)
     return result
 
 
 class Paging:
-    '''
+    """
     Paging 有三个属性：
     1.  previous_position 字符串
         保存着查询上一页所需要的信息
@@ -28,15 +28,15 @@ class Paging:
         保存着查询下一页所需要的信息
     3.  has_next 或者 has_previous 布尔值
         对于一个 Paging 实例，它只能有 has_next 和 has_previous 两者中的一种
-    '''
+    """
 
     def __init__(self, limit, backwards, obj_formuler, spec_items):
-        '''
+        """
         limit           int         一页的长度
         backwards       bool        查询的是否是上一页
         obj_list        list        一个由 dict 组成的 list，长度为 0 <= len(obj_list) <= limit + 1
         obj_formuler    function
-        '''
+        """
 
         item_0 = obj_formuler(spec_items[0]) if spec_items[0] else {}
         item_n = obj_formuler(spec_items[1]) if spec_items[1] else {}

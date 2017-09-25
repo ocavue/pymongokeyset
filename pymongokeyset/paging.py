@@ -10,7 +10,7 @@ def check_params(sort, limit):
 
 
 def generate_spec(key_condictions):
-    '''
+    """
     key_condictions 是一个列表，这个列表的每个元素都是一个形如 (key, value, direction) 的 tuple
     这个函数以递归的方式获取 mongo 查询语句
 
@@ -19,7 +19,7 @@ def generate_spec(key_condictions):
     ...     ('b', '20', 0),
     ... ])
     {'$or': [{'$and': [{'a': '10'}, {'b': {'$lt': '20'}}]}, {'a': {'$gt': '10'}}]}
-    '''
+    """
 
     if not key_condictions:
         return {}
@@ -37,23 +37,23 @@ def generate_spec(key_condictions):
 
 
 def change_sort_to_orderdict(sort):
-    '''
+    """
     >>> change_sort_to_orderdict([('a', 1), ('b', -1)])
     OrderedDict([('a', 1), ('b', -1)])
     >>> change_sort_to_orderdict((['a', 1], ['b', -1]))
     OrderedDict([('a', 1), ('b', -1)])
-    '''
+    """
 
     return OrderedDict(sort)
 
 
 def add__id_to_sort(sort):
-    '''_id 作为 unique_key 必须是排序条件的最后一个，为了保证 position 的唯一性
+    """_id 作为 unique_key 必须是排序条件的最后一个，为了保证 position 的唯一性
 
     >>> sort = OrderedDict([('a', 1)])
     >>> add__id_to_sort(sort)
     OrderedDict([('a', 1), ('_id', 1)])
-    '''
+    """
 
     if '_id' not in sort.keys():
         sort['_id'] = 1
@@ -61,11 +61,11 @@ def add__id_to_sort(sort):
 
 
 def reverse_sort_direction(sort, backwards):
-    '''
+    """
     >>> sort = OrderedDict([('a', 1), ('_id', 1)])
     >>> reverse_sort_direction(sort, True)
     OrderedDict([('a', -1), ('_id', -1)])
-    '''
+    """
 
     if backwards:
         for i in sort:
@@ -74,7 +74,7 @@ def reverse_sort_direction(sort, backwards):
 
 
 def add_projection(projection, sort):
-    '''对于所有由于排序的键，这些键都必须在 projection 中，因为这些键对应的 value 会成为下一次查询的时候条件'''
+    """对于所有由于排序的键，这些键都必须在 projection 中，因为这些键对应的 value 会成为下一次查询的时候条件"""
     if projection is None:
         return
 
@@ -104,7 +104,7 @@ def add_projection(projection, sort):
 
 
 def add_keyset_specifying(filter, sort, position):
-    '''在 specifying 中添加 keyset filter'''
+    """在 specifying 中添加 keyset filter"""
     if position:
 
         key_condictions = []
@@ -121,7 +121,7 @@ def add_keyset_specifying(filter, sort, position):
 
 
 def add_limit(limit):
-    '''为了知道有没有下一页/上一页，需要多查出一个文档。多查出的那个文档不会返回给用户'''
+    """为了知道有没有下一页/上一页，需要多查出一个文档。多查出的那个文档不会返回给用户"""
     if limit == 0:
         return 0
     else:
