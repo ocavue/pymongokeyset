@@ -91,7 +91,7 @@ class ProjectionTestCase(BaseTestCase):
             self.assertEqual(page1[0].get('a'), 0)
 
     def test_exclusion_projection(self):
-        condictions = dict(limit=2, sort=[['a', 1]], collection=self.collect)
+        condictions = dict(limit=2, sort=[['a', 1], ['b', 1]], collection=self.collect)
 
         for projection in [{'b': 0}, {'b': 0, '_id': 1}, {'b': 0, '_id': 0}]:
             cursor1 = get_keyset_cursor(**condictions, projection=projection)

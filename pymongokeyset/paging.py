@@ -92,6 +92,10 @@ def add_projection(projection, sort):
         # So make sure that projection and ordering has not intersection
         for key in sort.keys():
             projection.pop(key, None)
+
+        # if projection == {}, then pymongo will only return "_id" field, which is not expect result
+        if not projection:
+            projection = None
     else:
         # If direction of projection is 1, mongodb will only reture fields in projection
         # So make sure that all fields in ordering are in projection
