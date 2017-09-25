@@ -7,7 +7,7 @@ def main():
     collection.insert_many([{'_id': i} for i in range(7)])
 
     search_condictions = {
-        'collection': collection,   
+        'collection': collection,
         'filter': {},
         'sort': [('_id', 1)],
         'limit': 5,
