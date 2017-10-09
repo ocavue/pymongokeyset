@@ -12,13 +12,15 @@ class SpecTestCase(BaseTestCase):
     } for i in range(100)]
 
     def test_next(self):
-        cursor1 = get_keyset_cursor(collection=self.collect, sort=[['a.b', 1]], limit=20)
+        params = dict(collection=self.collect, sort=[['a.b', 1]], limit=20)
+
+        cursor1 = get_keyset_cursor(**params)
         self.assertEqual([i['a']['b'] for i in cursor1], list(range(0, 20)))
 
-        cursor2 = get_keyset_cursor(collection=self.collect, sort=[['a.b', 1]], limit=20, position=cursor1.paging.next_position)
+        cursor2 = get_keyset_cursor(**params, position=cursor1.paging.next_position)
         self.assertEqual([i['a']['b'] for i in cursor2], list(range(20, 40)))
 
-        cursor1 = get_keyset_cursor(collection=self.collect, sort=[['a.b', 1]], limit=20, position=cursor2.paging.previous_position)
+        cursor1 = get_keyset_cursor(**params, position=cursor2.paging.previous_position)
         self.assertEqual([i['a']['b'] for i in cursor1], list(range(0, 20)))
 
 

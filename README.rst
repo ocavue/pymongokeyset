@@ -8,7 +8,7 @@ An executable example can be found at ``pymongokeyset/example/simple_examle.py``
 
 .. code-block:: python
 
-    collection = prepare()
+    collection = mongomock.MongoClient().db.collection
     collection.insert_many([{'_id': i} for i in range(7)])
 
     search_condictions = {
@@ -37,3 +37,20 @@ An executable example can be found at ``pymongokeyset/example/simple_examle.py``
         cursor0 = get_keyset_cursor(**search_condictions, position=cursor1.paging.previous_position)
         print('page0:', list(cursor0))  # [{'_id': -1}]
 
+Install
+-----------
+
+Install by pypi (not available for now)
+###########
+
+.. code-block:: shell
+
+    pip3 install pymongokeyset
+
+Install by source code
+###########
+
+.. code-block:: shell
+
+    python3 setup.py sdist
+    pip3 install ./dist/pymongokeyset-0.1.3.tar

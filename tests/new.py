@@ -1,5 +1,5 @@
 from base import BaseTestCase, unittest
-from pymongokeyset import get_keyset_cursor 
+from pymongokeyset import get_keyset_cursor
 
 
 class NormalTestCase(BaseTestCase):
@@ -50,6 +50,7 @@ class NormalTestCase(BaseTestCase):
             'collection': self.collect,
             'limit': 3,
             'sort': [('m', 1), ('n', 1), ('_id', 1)],
+            # TODO test some edge index cases
         }
 
         cursor1 = get_keyset_cursor(**search_condictions)

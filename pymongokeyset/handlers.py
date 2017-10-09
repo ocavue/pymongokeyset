@@ -1,5 +1,7 @@
 from collections import OrderedDict
-from .cursor import NewCursor
+from .models import KeysetCursor
+from bson.json_util import loads
+from typing import Dict, Iterable, Tuple
 
 
 def check_params(sort, limit):
@@ -7,12 +9,17 @@ def check_params(sort, limit):
         raise TypeError('sort must be list')
     if not isinstance(limit, int):
         raise TypeError('limit must be int')
+    if limit == 0:
+        raise ValueError('limit can not be zero')
+    if limit < 0:
+        # TODO why does pymongo allow a limit small than zero
+        raise ValueError('limit can not smaller than zero')
 
 
 def generate_spec(key_condictions):
-    """
-    key_condictions 是一个列表，这个列表的每个元素都是一个形如 (key, value, direction) 的 tuple
-    这个函数以递归的方式获取 mongo 查询语句
+    """get mongo query filter by recursion
+
+    key_condictions is a list of (key, value, direction)
 
     >>> generate_spec([
     ...     ('a', '10', 1),
@@ -24,8 +31,7 @@ def generate_spec(key_condictions):
     if not key_condictions:
         return {}
 
-    item = key_condictions[0]
-    key, value, direction = item
+    key, value, direction = key_condictions[0]
 
     gt_or_lt = '$gt' if direction == 1 else '$lt'
 
@@ -36,45 +42,34 @@ def generate_spec(key_condictions):
         return {key: {gt_or_lt: value}}
 
 
-def change_sort_to_orderdict(sort):
-    """
-    >>> change_sort_to_orderdict([('a', 1), ('b', -1)])
-    OrderedDict([('a', 1), ('b', -1)])
-    >>> change_sort_to_orderdict((['a', 1], ['b', -1]))
-    OrderedDict([('a', 1), ('b', -1)])
-    """
+def update_sort(sort, backwards):
+    """update sort
 
-    return OrderedDict(sort)
-
-
-def add__id_to_sort(sort):
-    """_id 作为 unique_key 必须是排序条件的最后一个，为了保证 position 的唯一性
-
-    >>> sort = OrderedDict([('a', 1)])
-    >>> add__id_to_sort(sort)
-    OrderedDict([('a', 1), ('_id', 1)])
+    >>> update_sort([('a', 1), ('b': -1)], True)
+    OrderedDict([('a', -1), ('b': -1), ('_id': -1)])
     """
 
+    # change sort to OrderedDict
+    sort = OrderedDict(sort)
+
+    # Add _id to sort's keys
+    # _id must be the last condiction of sort and ensure that position is unique.
     if '_id' not in sort.keys():
         sort['_id'] = 1
-    return sort
 
-
-def reverse_sort_direction(sort, backwards):
-    """
-    >>> sort = OrderedDict([('a', 1), ('_id', 1)])
-    >>> reverse_sort_direction(sort, True)
-    OrderedDict([('a', -1), ('_id', -1)])
-    """
-
+    # Reverse direction of sort if necessary
     if backwards:
         for i in sort:
             sort[i] = -sort[i]
+
     return sort
 
 
 def add_projection(projection, sort):
-    """对于所有由于排序的键，这些键都必须在 projection 中，因为这些键对应的 value 会成为下一次查询的时候条件"""
+    """Make sure that those keys used to sort must be in projection
+
+    Beacuse those value will be condictions of next query
+    """
     if projection is None:
         return
 
@@ -89,17 +84,18 @@ def add_projection(projection, sort):
 
     if direction == 0:
         # If direction of projection is 0, mongodb will not return fields in projection
-        # So make sure that projection and ordering has not intersection
-        for key in sort.keys():
-            projection.pop(key, None)
-
-        # if projection == {}, then pymongo will only return "_id" field, which is not expect result
-        if not projection:
-            projection = None
+        # So make sure that projection and sort has not intersection
+        inter = set(sort.keys()) & set(projection.keys())
+        if inter:
+            inter_projection = {i: 0 for i in inter}
+            raise ValueError('{} is in sort. Please remove {} in projection'.format(inter, inter_projection))
     else:
         # If direction of projection is 1, mongodb will only reture fields in projection
-        # So make sure that all fields in ordering are in projection
-        projection.update({key: 1 for key in sort.keys()})
+        # So make sure that all fields in sort are in projection
+        diff = set(sort.keys()) - set(projection.keys())
+        if diff:
+            diff_projection = {i: 1 for i in diff}
+            raise ValueError('{} is in sort. Please add {} in projection'.format(diff, diff_projection))
     return projection
 
 
@@ -121,25 +117,34 @@ def add_keyset_specifying(filter, sort, position):
 
 
 def add_limit(limit):
-    """为了知道有没有下一页/上一页，需要多查出一个文档。多查出的那个文档不会返回给用户"""
-    if limit == 0:
-        return 0
-    else:
-        return abs(limit) + 1
+    """plus 1 to limit
+
+    To know if there is next or preview page, we need to find an extra document which will not be returned to user.
+    """
+    return abs(limit) + 1
 
 
-def get_keyset_cursor(collection, filter={}, projection=None, sort=[], limit=10, position={}):
+def get_keyset_cursor(
+    collection,
+    filter: Dict = None,
+    projection: Dict[str, int] = None,
+    sort: Iterable[Tuple[str, int]] = None,
+    limit: int = 10,
+    position: str = None
+):
+    """get a keyset cursor"""
+
     check_params(sort, limit)
+
+    position = loads(position) if position else {}
     backwards = position.get('backwards', False)
 
-    sort = change_sort_to_orderdict(sort)
-    sort = add__id_to_sort(sort)
-    sort = reverse_sort_direction(sort, backwards)
+    sort = update_sort(sort, backwards)
     projection = add_projection(projection, sort)
     filter = add_keyset_specifying(filter, sort, position)
     limit = add_limit(limit)
 
-    return NewCursor(
+    return KeysetCursor(
         collection=collection,
         filter=filter,
         projection=projection,

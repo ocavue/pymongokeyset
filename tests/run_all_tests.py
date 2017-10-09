@@ -1,5 +1,4 @@
-from single_sort import *
-from mulit_sort import *
+from new import *
 from spec_filter import *
 import unittest
 

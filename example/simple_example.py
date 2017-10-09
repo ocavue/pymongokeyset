@@ -1,9 +1,10 @@
-from prepare import prepare
+from prepare import *
+import mongomock
 from pymongokeyset import get_keyset_cursor
 
 
 def main():
-    collection = prepare()
+    collection = mongomock.MongoClient().db.collection
     collection.insert_many([{'_id': i} for i in range(7)])
 
     search_condictions = {
