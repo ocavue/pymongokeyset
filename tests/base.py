@@ -5,6 +5,7 @@ from pymongo import MongoClient
 
 ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 sys.path.extend([ROOT_PATH])
+print("Make sure mongodb is running")
 
 
 def get_db_name(client):
