@@ -8,7 +8,7 @@ An executable example can be found at ``pymongokeyset/example/simple_examle.py``
 
 .. code-block:: python
 
-    collection = mongomock.MongoClient().db.collection
+    collection = prepare()
     collection.insert_many([{'_id': i} for i in range(7)])
 
     search_condictions = {
