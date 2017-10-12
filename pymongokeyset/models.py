@@ -92,3 +92,6 @@ class KeysetCursor(Cursor):
             return self.__data.popleft()
         else:
             raise StopIteration
+
+    def sort(self, *args, **kwargs):
+        raise Exception("KeysetCursor.sort method is forbidden. Please input sort parameter when calling page_query.")
