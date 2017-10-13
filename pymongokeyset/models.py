@@ -1,4 +1,4 @@
-from utils import itemgetter
+from .utils import itemgetter
 from bson.json_util import dumps
 from pymongo.cursor import Cursor
 from collections import deque

@@ -18,18 +18,18 @@ def main():
     print('page1:', list(cursor1))  # [{'_id': 0}, {'_id': 1}, {'_id': 2}, {'_id': 3}, {'_id': 4}]
 
     # gets the second page
-    cursor2 = get_keyset_cursor(**search_condictions, position=cursor1.paging.next_position)
+    cursor2 = get_keyset_cursor(**search_condictions, position=cursor1.paging.position)
     print('page2:', list(cursor2))  # [{'_id': 5}, {'_id': 6}]
 
     collection.insert({'_id': -1})
 
     # the first page again, backwards from the previous page
-    cursor1 = get_keyset_cursor(**search_condictions, position=cursor2.paging.previous_position)
+    cursor1 = get_keyset_cursor(**search_condictions, position=cursor2.paging.position, backwards=True)
     print('page1:', list(cursor1))  # [{'_id': 0}, {'_id': 1}, {'_id': 2}, {'_id': 3}, {'_id': 4}]
 
     # what if new items were added at the start?
-    if cursor1.paging.has_previous:
-        cursor0 = get_keyset_cursor(**search_condictions, position=cursor1.paging.previous_position)
+    if cursor1.paging.has_more:
+        cursor0 = get_keyset_cursor(**search_condictions, position=cursor1.paging.position, backwards=True)
         print('page0:', list(cursor0))  # [{'_id': -1}]
 
 

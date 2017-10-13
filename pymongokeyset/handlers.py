@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from models import KeysetCursor
+from .models import KeysetCursor
 from bson.json_util import loads
 from typing import Dict, Iterable, Tuple
 
@@ -104,7 +104,7 @@ def add_keyset_specifying(filter, sort, edge_obj):
 
         key_condictions = []
         for key, direction in sort.items():
-            key_condictions.append((key, edge_obj['obj'].get(key), direction))
+            key_condictions.append((key, edge_obj.get(key), direction))
 
         keyset_condiction = generate_spec(key_condictions)
 
