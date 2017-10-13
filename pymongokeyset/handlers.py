@@ -50,22 +50,22 @@ def update_sort(sort, backwards):
     """
 
     # change sort to OrderedDict
-    sort = OrderedDict(sort)
+    sort_od = OrderedDict(sort)
 
     # Add _id to sort's keys
     # _id must be the last condiction of sort and ensure that position is unique.
-    if '_id' not in sort.keys():
-        sort['_id'] = 1
+    if '_id' not in sort_od.keys():
+        sort_od['_id'] = 1
 
     # Reverse direction of sort if necessary
     if backwards:
-        for i in sort:
-            sort[i] = -sort[i]
+        for i in sort_od:
+            sort_od[i] = -sort_od[i]
 
-    return sort
+    return sort_od
 
 
-def add_projection(projection, sort):
+def check_projection(projection, sort):
     """Make sure that those keys used to sort must be in projection
 
     Beacuse those value will be condictions of next query
@@ -96,16 +96,15 @@ def add_projection(projection, sort):
         if diff:
             diff_projection = {i: 1 for i in diff}
             raise ValueError('{} is in sort. Please add {} in projection'.format(diff, diff_projection))
-    return projection
 
 
-def add_keyset_specifying(filter, sort, position):
+def add_keyset_specifying(filter, sort, edge_obj):
     """在 specifying 中添加 keyset filter"""
-    if position:
+    if edge_obj:
 
         key_condictions = []
         for key, direction in sort.items():
-            key_condictions.append((key, position['obj'].get(key), direction))
+            key_condictions.append((key, edge_obj.get(key), direction))
 
         keyset_condiction = generate_spec(key_condictions)
 
@@ -124,24 +123,27 @@ def add_limit(limit):
     return abs(limit) + 1
 
 
-def get_keyset_cursor(
+def page_query(
     collection,
     filter: Dict = None,
     projection: Dict[str, int] = None,
     sort: Iterable[Tuple[str, int]] = None,
     limit: int = 10,
-    position: str = None
+    position: str = None,
+    backwards: bool = False,
 ):
     """get a keyset cursor"""
 
     check_params(sort, limit)
 
-    position = loads(position) if position else {}
-    backwards = position.get('backwards', False)
+    if position:
+        edge_obj = loads(position)['previous'] if backwards else loads(position)['next']
+    else:
+        edge_obj = {}
 
-    sort = update_sort(sort, backwards)
-    projection = add_projection(projection, sort)
-    filter = add_keyset_specifying(filter, sort, position)
+    sort_od = update_sort(sort, backwards)
+    check_projection(projection, sort_od)
+    filter = add_keyset_specifying(filter, sort_od, edge_obj)
     limit = add_limit(limit)
 
     return KeysetCursor(
@@ -149,7 +151,7 @@ def get_keyset_cursor(
         filter=filter,
         projection=projection,
         limit=limit,
-        sort=list(sort.items()),
+        sort=list(sort_od.items()),
         backwards=backwards
     )
 

@@ -1,4 +1,4 @@
-from .handlers import get_keyset_cursor
+from .handlers import page_query
 from .models import KeysetCursor
 
-__all__ = ['get_keyset_cursor', 'KeysetCursor']
+__all__ = ['page_query', 'KeysetCursor']
