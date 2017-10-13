@@ -50,19 +50,19 @@ def update_sort(sort, backwards):
     """
 
     # change sort to OrderedDict
-    sort = OrderedDict(sort)
+    sort_od = OrderedDict(sort)
 
     # Add _id to sort's keys
     # _id must be the last condiction of sort and ensure that position is unique.
-    if '_id' not in sort.keys():
-        sort['_id'] = 1
+    if '_id' not in sort_od.keys():
+        sort_od['_id'] = 1
 
     # Reverse direction of sort if necessary
     if backwards:
-        for i in sort:
-            sort[i] = -sort[i]
+        for i in sort_od:
+            sort_od[i] = -sort_od[i]
 
-    return sort
+    return sort_od
 
 
 def check_projection(projection, sort):
@@ -141,9 +141,9 @@ def get_keyset_cursor(
     else:
         edge_obj = {}
 
-    sort = update_sort(sort, backwards)
-    check_projection(projection, sort)
-    filter = add_keyset_specifying(filter, sort, edge_obj)
+    sort_od = update_sort(sort, backwards)
+    check_projection(projection, sort_od)
+    filter = add_keyset_specifying(filter, sort_od, edge_obj)
     limit = add_limit(limit)
 
     return KeysetCursor(
@@ -151,7 +151,7 @@ def get_keyset_cursor(
         filter=filter,
         projection=projection,
         limit=limit,
-        sort=list(sort.items()),
+        sort=list(sort_od.items()),
         backwards=backwards
     )
 
