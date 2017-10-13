@@ -5,7 +5,6 @@ from pymongo import MongoClient
 
 ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 sys.path.extend([ROOT_PATH])
-print("Make sure mongodb is running")
 
 
 def get_db_name(client):
@@ -30,7 +29,7 @@ def drop_db_from_collect(collect):
 
 class BaseTestCase(unittest.TestCase):
     # Can't use mongomock here, beacause pymongokeyset use some private variables of pymongo.cursor.Cursor
-
+    print("Make sure mongodb is running")
     objs = []
 
     def setUp(self):
