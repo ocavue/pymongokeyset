@@ -123,7 +123,7 @@ def add_limit(limit):
     return abs(limit) + 1
 
 
-def get_keyset_cursor(
+def page_query(
     collection,
     filter: Dict = None,
     projection: Dict[str, int] = None,

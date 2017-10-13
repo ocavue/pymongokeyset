@@ -1,5 +1,5 @@
 from base import BaseTestCase, unittest
-from pymongokeyset import get_keyset_cursor
+from pymongokeyset import page_query
 
 
 class NormalTestCase(BaseTestCase):
@@ -25,19 +25,19 @@ class NormalTestCase(BaseTestCase):
             'sort': [('_id', 1)],
         }
 
-        cursor1 = get_keyset_cursor(**search_condictions)
+        cursor1 = page_query(**search_condictions)
         self.assert_cursor(cursor1, self.objs[:3], has_more=True)
 
-        cursor2 = get_keyset_cursor(**search_condictions, position=cursor1.paging.position)
+        cursor2 = page_query(**search_condictions, position=cursor1.paging.position)
         self.assert_cursor(cursor2, self.objs[3:6], has_more=True)
 
-        cursor3 = get_keyset_cursor(**search_condictions, position=cursor2.paging.position)
+        cursor3 = page_query(**search_condictions, position=cursor2.paging.position)
         self.assert_cursor(cursor3, self.objs[6:], has_more=False)
 
-        cursor2 = get_keyset_cursor(**search_condictions, position=cursor3.paging.position, backwards=True)
+        cursor2 = page_query(**search_condictions, position=cursor3.paging.position, backwards=True)
         self.assert_cursor(cursor2, self.objs[3:6], has_more=True)
 
-        cursor1 = get_keyset_cursor(**search_condictions, position=cursor2.paging.position, backwards=True)
+        cursor1 = page_query(**search_condictions, position=cursor2.paging.position, backwards=True)
         self.assert_cursor(cursor1, self.objs[:3], has_more=False)
 
     def test_mutil_sort_cast(self):
@@ -48,19 +48,19 @@ class NormalTestCase(BaseTestCase):
             # TODO test some edge index cases
         }
 
-        cursor1 = get_keyset_cursor(**search_condictions)
+        cursor1 = page_query(**search_condictions)
         self.assert_cursor(cursor1, self.objs[:3], has_more=True)
 
-        cursor2 = get_keyset_cursor(**search_condictions, position=cursor1.paging.position)
+        cursor2 = page_query(**search_condictions, position=cursor1.paging.position)
         self.assert_cursor(cursor2, self.objs[3:6], has_more=True)
 
-        cursor3 = get_keyset_cursor(**search_condictions, position=cursor2.paging.position)
+        cursor3 = page_query(**search_condictions, position=cursor2.paging.position)
         self.assert_cursor(cursor3, self.objs[6:], has_more=False)
 
-        cursor2 = get_keyset_cursor(**search_condictions, position=cursor3.paging.position, backwards=True)
+        cursor2 = page_query(**search_condictions, position=cursor3.paging.position, backwards=True)
         self.assert_cursor(cursor2, self.objs[3:6], has_more=True)
 
-        cursor1 = get_keyset_cursor(**search_condictions, position=cursor2.paging.position, backwards=True)
+        cursor1 = page_query(**search_condictions, position=cursor2.paging.position, backwards=True)
         self.assert_cursor(cursor1, self.objs[:3], has_more=False)
 
 
