@@ -17,10 +17,10 @@ class SpecTestCase(BaseTestCase):
         cursor1 = get_keyset_cursor(**params)
         self.assertEqual([i['a']['b'] for i in cursor1], list(range(0, 20)))
 
-        cursor2 = get_keyset_cursor(**params, position=cursor1.paging.next_position)
+        cursor2 = get_keyset_cursor(**params, position=cursor1.paging.position)
         self.assertEqual([i['a']['b'] for i in cursor2], list(range(20, 40)))
 
-        cursor1 = get_keyset_cursor(**params, position=cursor2.paging.previous_position)
+        cursor1 = get_keyset_cursor(**params, position=cursor2.paging.position, backwards=True)
         self.assertEqual([i['a']['b'] for i in cursor1], list(range(0, 20)))
 
 
@@ -53,7 +53,7 @@ class FilterTestCase(BaseTestCase):
         cursor1 = get_keyset_cursor(**params)
         self.assertEqual([i['a'] for i in cursor1], [0, 2])
 
-        cursor2 = get_keyset_cursor(**params, position=cursor1.paging.next_position)
+        cursor2 = get_keyset_cursor(**params, position=cursor1.paging.position)
         self.assertEqual([i['a'] for i in cursor2], [4, 6])
 
     def test_mulit_filter(self):
@@ -62,7 +62,7 @@ class FilterTestCase(BaseTestCase):
         cursor1 = get_keyset_cursor(**params)
         self.assertEqual([i['a'] for i in cursor1], [2, 4])
 
-        cursor2 = get_keyset_cursor(**params, position=cursor1.paging.next_position)
+        cursor2 = get_keyset_cursor(**params, position=cursor1.paging.position)
         self.assertEqual([i['a'] for i in cursor2], [6, 8])
 
 
