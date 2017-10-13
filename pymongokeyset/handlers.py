@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from .models import KeysetCursor
+from models import KeysetCursor
 from bson.json_util import loads
 from typing import Dict, Iterable, Tuple
 
