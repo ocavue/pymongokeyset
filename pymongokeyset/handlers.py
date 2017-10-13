@@ -98,13 +98,13 @@ def check_projection(projection, sort):
             raise ValueError('{} is in sort. Please add {} in projection'.format(diff, diff_projection))
 
 
-def add_keyset_specifying(filter, sort, position):
+def add_keyset_specifying(filter, sort, edge_obj):
     """在 specifying 中添加 keyset filter"""
-    if position:
+    if edge_obj:
 
         key_condictions = []
         for key, direction in sort.items():
-            key_condictions.append((key, position['obj'].get(key), direction))
+            key_condictions.append((key, edge_obj['obj'].get(key), direction))
 
         keyset_condiction = generate_spec(key_condictions)
 
@@ -129,18 +129,21 @@ def get_keyset_cursor(
     projection: Dict[str, int] = None,
     sort: Iterable[Tuple[str, int]] = None,
     limit: int = 10,
-    position: str = None
+    position: str = None,
+    backwards: bool = False,
 ):
     """get a keyset cursor"""
 
     check_params(sort, limit)
 
-    position = loads(position) if position else {}
-    backwards = position.get('backwards', False)
+    if position:
+        edge_obj = loads(position)['previous'] if backwards else loads(position)['next']
+    else:
+        edge_obj = {}
 
     sort = update_sort(sort, backwards)
-    projection = check_projection(projection, sort)
-    filter = add_keyset_specifying(filter, sort, position)
+    check_projection(projection, sort)
+    filter = add_keyset_specifying(filter, sort, edge_obj)
     limit = add_limit(limit)
 
     return KeysetCursor(
