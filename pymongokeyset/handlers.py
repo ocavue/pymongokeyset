@@ -65,7 +65,7 @@ def update_sort(sort, backwards):
     return sort
 
 
-def add_projection(projection, sort):
+def check_projection(projection, sort):
     """Make sure that those keys used to sort must be in projection
 
     Beacuse those value will be condictions of next query
@@ -96,7 +96,6 @@ def add_projection(projection, sort):
         if diff:
             diff_projection = {i: 1 for i in diff}
             raise ValueError('{} is in sort. Please add {} in projection'.format(diff, diff_projection))
-    return projection
 
 
 def add_keyset_specifying(filter, sort, position):
@@ -140,7 +139,7 @@ def get_keyset_cursor(
     backwards = position.get('backwards', False)
 
     sort = update_sort(sort, backwards)
-    projection = add_projection(projection, sort)
+    projection = check_projection(projection, sort)
     filter = add_keyset_specifying(filter, sort, position)
     limit = add_limit(limit)
 
